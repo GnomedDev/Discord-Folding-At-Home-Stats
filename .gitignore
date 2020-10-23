@@ -1,0 +1,4 @@
+*.json
+*.bak
+*.ini
+__pycache__
