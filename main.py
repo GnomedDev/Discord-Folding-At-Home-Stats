@@ -53,7 +53,7 @@ class Main(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.embeds and message.channel.id == 749971061843558440 and str(message.author) == "GitHub#0000":
+        if message.embeds and message.channel.id in (749971061843558440, 764545844761591808) and str(message.author) == "GitHub#0000":
             print("Message is from a github webhook")
             if " new commit" in message.embeds[0].title:
                 print("Message is a commit")
