@@ -96,7 +96,8 @@ class Main(commands.Cog):
             self.updater.start()
             self.save_files.start()
         except RuntimeError: pass
-        print("Ready!")
+        print(f"Started as {self.bot.user.name}!")
+        await self.bot.channels["logs"].send("Started!")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -228,12 +229,14 @@ class Main(commands.Cog):
         error = getattr(error, 'original', error)
         if isinstance(error, commands.NotOwner) or isinstance(error, commands.CommandNotFound):
             return
+
         elif isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send(f"Did you type the command right, {ctx.author.mention}?\nTry doing @help!")
+
         elif isinstance(error, commands.BotMissingPermissions):
             if "send_messages" in str(error.missing_perms):
                 return await ctx.author.send("Sorry I could not complete this command as I don't have send messages permissions.")
-            return await ctx.send("I am missing the permissions: " + str(error.missing_perms).replace("[", "").replace("]", ""))
+            return await ctx.send(f"I am missing the permissions: {basic.remove_chars(str(error.missing_perms), "[", "]")}")
 
         first_part = f"{str(ctx.author)} caused an error with the message: {ctx.message.clean_content}"
         second_part = ''.join(format_exception(type(error), error, error.__traceback__))
