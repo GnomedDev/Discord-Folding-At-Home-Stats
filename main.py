@@ -236,7 +236,7 @@ class Main(commands.Cog):
         elif isinstance(error, commands.BotMissingPermissions):
             if "send_messages" in str(error.missing_perms):
                 return await ctx.author.send("Sorry I could not complete this command as I don't have send messages permissions.")
-            return await ctx.send(f"I am missing the permissions: {basic.remove_chars(str(error.missing_perms), "[", "]")}")
+            return await ctx.send(f"I am missing the permissions: {basic.remove_chars(str(error.missing_perms), '[', ']')}")
 
         first_part = f"{str(ctx.author)} caused an error with the message: {ctx.message.clean_content}"
         second_part = ''.join(format_exception(type(error), error, error.__traceback__))
