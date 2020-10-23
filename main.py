@@ -2,14 +2,14 @@ import json
 from configparser import ConfigParser
 from datetime import datetime, timedelta
 from inspect import cleandoc
+from subprocess import call
 from traceback import format_exception
 
 import aiohttp
 import discord
 from discord.ext import commands, tasks
 
-from utils import settings
-from utils import basic
+from utils import basic, settings
 
 #//////////////////////////////////////////////////////
 config = ConfigParser()
