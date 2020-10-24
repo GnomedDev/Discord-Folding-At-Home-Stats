@@ -2,6 +2,7 @@ import json
 from configparser import ConfigParser
 from datetime import datetime, timedelta
 from inspect import cleandoc
+from os import listdir
 from subprocess import call
 from traceback import format_exception
 
@@ -9,7 +10,9 @@ import aiohttp
 import discord
 from discord.ext import commands, tasks
 
-from utils import basic, settings
+from utils import basic
+from utils.settings import blocked_users_class as blocked_users
+from utils.settings import settings_class as settings
 
 #//////////////////////////////////////////////////////
 config = ConfigParser()
@@ -27,7 +30,11 @@ bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents, status=status, ac
 bot.channels = dict()
 bot.trusted = basic.remove_chars(config["Main"]["trusted_ids"], "[", "]", "'").split(", ")
 
-bot.load_extension("cogs.common")
+cogs = [str(cog) for cog in listdir("cogs") if cog.endswith(".py") and cog != "common.py"]
+for cog in cogs:
+    cog = f"cogs.{cog[:-3]}"
+    bot.load_extension(cog)
+
 bot.remove_command("help")
 #//////////////////////////////////////////////////////
 class Main(commands.Cog):
@@ -40,11 +47,13 @@ class Main(commands.Cog):
 
     @tasks.loop(seconds=60.0)
     async def save_files(self):
-        try:    settings.save()
+        try:
+            settings.save()
+            blocked_users.save()
         except Exception as e:
             error = getattr(e, 'original', e)
 
-            temp = f"```{''.join(traceback.format_exception(type(error), error, error.__traceback__))}```"
+            temp = f"```{''.join(format_exception(type(error), error, error.__traceback__))}```"
             if len(temp) >= 1900:
                 with open("temp.txt", "w") as f:  f.write(temp)
                 await self.bot.channels["errors"].send(file=discord.File("temp.txt"))
@@ -142,6 +151,17 @@ class Main(commands.Cog):
         embed.set_footer(text=f"Do you want to get support for {self.bot.user.name} or invite it to your own server? https://discord.gg/zWPWwQC")
         await ctx.send(embed=embed)
 
+    @commands.command()
+    @commands.is_owner()
+    async def end(self, ctx):
+        self.updater.cancel()
+        self.save_files.cancel()
+
+        settings.save()
+        blocked_users.save()
+
+        await self.bot.close()
+
     @commands.bot_has_guild_permissions(read_messages=True, send_messages=True, embed_links=True)
     @commands.command()
     async def stats(self, ctx, *, donor: str):
@@ -191,7 +211,8 @@ class Main(commands.Cog):
                     firstjson = await resp.json()
                     try:    teamnumber = str(firstjson["results"][0]["team"])
                     except: return await ctx.send("**Error:** Invalid Team Name")
-            else:   teamnumber = name
+            else:
+                teamnumber = name
 
             async with session.get(f"https://stats.foldingathome.org/api/team/{teamnumber}") as resp:
                 teamjson = await resp.json()

@@ -1,6 +1,6 @@
 async def ensure_webhook(channel, name="Folding-Webhook"):
     webhooks = await channel.webhooks()
-    if len(webhooks) == 0:  webhook = await channel.create_webhook(name)
+    if len(webhooks) == 0:  webhook = await channel.create_webhook(name=name)
     else:   webhook = webhooks[0]
 
     return webhook
