@@ -15,7 +15,9 @@ def write_blank_json(name, type):
     with open(name, "x") as f:
         json.dump(type, f)
 
-try:    write_blank_json("settings.json", dict())
+try:
+    write_blank_json("settings.json", dict())
+    write_blank_json("blocked_users.json", list())
 except:
     print("Failed making one of the files! If you are resetting to default, delete the servers folder, all .txt, .json, and the .ini file before running this again!")
     raise SystemExit
